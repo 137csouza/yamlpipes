@@ -1,0 +1,33 @@
+pool:
+  name: Default
+#Your build pipeline references an undefined variable named ‘Parameters.ArtifactName’. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab. See https://go.microsoft.com/fwlink/?linkid=865972
+
+steps:
+- task: gittools.gitversion.gitversion-task.GitVersion@5
+  displayName: GitVersion
+  inputs:
+    updateAssemblyInfo: true
+
+- task: DeleteFiles@1
+  displayName: 'Delete files from source/Chemtech.Csn.Cimentos.Mes/Chemtech.Csn.Cimentos.Mes.Web/Deploy'
+  inputs:
+    SourceFolder: source/Chemtech.Csn.Cimentos.Mes/Chemtech.Csn.Cimentos.Mes.Web/Deploy
+    Contents: Web.config
+
+- task: CopyFiles@2
+  displayName: 'Copy Files to: $(build.artifactstagingdirectory)/Liquibase'
+  inputs:
+    SourceFolder: source/bd/Changelog
+    TargetFolder: '$(build.artifactstagingdirectory)/Liquibase'
+
+- task: CopyFiles@2
+  displayName: 'Copy Files to: $(build.artifactstagingdirectory)/Deploy'
+  inputs:
+    SourceFolder: source/Chemtech.Csn.Cimentos.Mes/Chemtech.Csn.Cimentos.Mes.Web/Deploy
+    TargetFolder: '$(build.artifactstagingdirectory)/Deploy'
+
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish Artifact'
+  inputs:
+    PathtoPublish: '$(build.artifactstagingdirectory)'
+    ArtifactName: '$(Parameters.ArtifactName)'
